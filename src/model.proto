@@ -1,0 +1,405 @@
+syntax = "proto2";
+
+package anukari.proto;
+
+import "base.proto";
+
+// Next id: 7
+message EntityId {
+  oneof entity_id {
+    uint32 model_global = 1;
+    uint32 link_id = 2;
+    uint32 body_id = 3;
+    uint32 sensor_id = 4;
+    uint32 exciter_id = 5;
+    uint32 modulator_id = 6;
+  }
+}
+
+// Next id: 3
+message EntityIdPair {
+  optional EntityId id_a = 1;
+  optional EntityId id_b = 2;
+}
+
+// Next id: 5
+message MidiEventId {
+  // WILDCARD (any channel) = 1111111
+  optional int32 channel = 1;
+
+  message None {}
+
+  oneof id {
+    None none = 2;
+    // WILDCARD (any note) = 1111112
+    int32 note = 3;
+    int32 controller = 4;
+  }
+}
+
+// Next id: 3
+message MidiNoteRange {
+  optional int32 lower = 1;
+  optional int32 upper = 2;
+}
+
+// Next id: 3
+message Orientation {
+  optional Vec3 normal = 1;
+  optional Vec3 tangent = 2;
+}
+
+// Next id: 2
+message Rotatable {
+  optional Orientation orientation = 1;
+}
+
+// Next id: 3
+message Translatable {
+  optional Vec3 initial_position = 1;
+  optional Vec3 current_position = 2;
+}
+
+// Next id: 8
+message Link {
+  optional uint32 id = 1;
+  optional EntityIdPair linked_ids = 2;
+
+  message SpringParameters {
+    optional float stiffness = 1;
+    optional float neutral_length = 2;
+  }
+
+  message SensorParameters {}
+
+  message ExciterParameters {}
+
+  message ModulatorParameters {
+    // MASS = 0
+    // DAMPING = 1
+    // POSITION_X = 2
+    // POSITION_Y = 3
+    // POSITION_Z = 4
+    // IMPULSE = 5
+    // STIFFNESS = 6
+    // NEUTRAL_LENGTH = 7
+    // DEPTH = 8
+    // FREQUENCY = 9
+    // PULSE_WIDTH = 10
+    // GAIN = 11
+    // PAN = 12
+    // HARDNESS = 13
+    // NOISE_AMOUNT = 14
+    // DRAW_VELOCITY = 15
+    // ROSIN_STICTION = 16
+    // ROSIN_DROPOFF = 17
+    // DISPLACEMENT_DISTANCE = 18
+    // DISPLACEMENT_DURATION = 19
+    // ROTATION_ABOUT_Y_AXIS = 20
+    // DELAY_SECONDS = 21
+    // SYNC_FREQUENCY = 22
+    // SMOOTHING_DURATION_SECONDS = 23
+    // DIRECTIONALITY = 24
+    // ISOTROPY = 25
+    optional uint32 operand = 1;
+    optional float depth = 2;
+    optional bool invert_polarity = 5;
+    optional bool exponential = 3;
+    optional bool multiply = 4;
+  }
+
+  message DelayLineParameters {
+    optional float delay_seconds = 1;
+  }
+
+  oneof parameters {
+    SpringParameters spring_parameters = 3;
+    SensorParameters sensor_parameters = 5;
+    ExciterParameters exciter_parameters = 4;
+    ModulatorParameters modulator_parameters = 6;
+    DelayLineParameters delay_line_parameters = 7;
+  }
+}
+
+// Next id: 10
+message Body {
+  optional uint32 id = 1;
+  optional Translatable translatable = 7;
+  optional float mass = 3;
+  optional float damping = 4;
+  optional float damping_scaling_dilated_dt = 8;
+  optional float damping_scaling_mass = 9;
+  optional bool anchored = 5;
+
+  reserved 2, 6;
+}
+
+// Next id: 6
+message Compressor {
+  optional float threshold_decibels = 1;
+  optional float ratio = 2;
+  optional float attack_seconds = 3;
+  optional float release_seconds = 4;
+  optional float makeup_gain_decibels = 5;
+}
+
+// Next id: 13
+message Sensor {
+  optional uint32 id = 1;
+  optional Translatable translatable = 9;
+  optional Rotatable rotatable = 10;
+  optional float gain_decibels = 4;
+  optional float pan = 6;
+  optional float directionality = 11;
+  optional float isotropy = 12;
+  optional bool external_output_enabled = 8;
+  optional Compressor compressor = 7;
+
+  reserved 2, 3, 5;
+}
+
+// Next id: 5
+message Envelope {
+  optional float attack = 1;
+  optional float decay = 2;
+  optional float sustain = 3;
+  optional float release = 4;
+}
+
+// Next id: 13
+message Exciter {
+  optional uint32 id = 1;
+  optional Translatable translatable = 10;
+  optional Rotatable rotatable = 11;
+  optional float velocity_sensitivity = 12;
+
+  message Mallet {
+    optional float impulse = 1;
+    optional float min_velocity_hardness = 2;
+    optional float max_velocity_hardness = 3;
+    optional float noise_amount = 4;
+  }
+
+  message AudioSignal {
+    optional bool external_input_enabled = 6;
+
+    // CHANNEL_LEFT = 0
+    // CHANNEL_RIGHT = 1
+    optional int32 external_input_channel = 1;
+    optional float gain_decibels = 2;
+    optional float delay_seconds = 5;
+    optional bool gate_on_midi_note_on = 3;
+    optional Envelope envelope = 4;
+  }
+
+  message Oscillator {
+    optional float gain_decibels = 1;
+    // SINE = 0
+    // SAWTOOTH = 1
+    // RECTANGLE = 2
+    // WHITE_NOISE = 3
+    // SAMPLE_AND_HOLD = 4
+    optional uint32 waveform = 2;
+    optional int32 octave = 3;
+    optional int32 semitone = 4;
+    optional float detune = 5;
+    optional float pulse_width = 6;
+    optional Envelope envelope = 7;
+  }
+
+  message Bow {
+    optional float draw_velocity = 1;
+    optional float rosin_dropoff = 3;
+    optional float rosin_stiction = 4;
+    optional Envelope envelope = 2;
+  }
+
+  message Plectrum {
+    optional float displacement_distance = 1;
+    optional float displacement_duration = 2;
+  }
+
+  oneof excitation_model {
+    Mallet mallet = 4;
+    AudioSignal audio_signal = 5;
+    Oscillator oscillator = 6;
+    Bow bow = 7;
+    Plectrum plectrum = 8;
+  }
+
+  reserved 2, 3, 9;
+}
+
+// Next id: 16
+message Modulator {
+  optional uint32 id = 1;
+  optional Translatable translatable = 7;
+  optional Rotatable rotatable = 15;
+
+  message GenericController {
+    optional float smoothing_duration_seconds = 1;
+  }
+
+  message MidiController {
+    optional GenericController generic_controller = 2;
+
+    reserved 1;
+  }
+
+  message MidiPitchBend {
+    optional GenericController generic_controller = 1;
+  }
+
+  message MidiChannelPressure {
+    optional GenericController generic_controller = 1;
+  }
+
+  message MidiAftertouch {
+    optional GenericController generic_controller = 1;
+  }
+
+  message MidiVelocity {
+    optional GenericController generic_controller = 2;
+    optional uint32 phase = 3;
+
+    reserved 1;
+  }
+
+  message MidiNoteFollower {
+    optional int32 center_midi_note = 1;
+    optional GenericController generic_controller = 2;
+  }
+
+  message HostParameter {
+    optional GenericController generic_controller = 1;
+  }
+
+  // Next id: 9
+  message LFO {
+    // SINE = 0
+    // SAWTOOTH = 1
+    // RECTANGLE = 2
+    // WHITE_NOISE = 3
+    // SAMPLE_AND_HOLD = 4
+    optional uint32 waveform = 1;
+    optional float frequency = 2;
+    // TWO_BAR = 0
+    // TWO_BAR_TRIPLET = 1
+    // ONE_BAR_DOTTED = 2
+    // ONE_BAR = 3
+    // ONE_BAR_TRIPLET = 4
+    // HALF_NOTE_DOTTED = 5
+    // HALF_NOTE = 6
+    // HALF_NOTE_TRIPLET = 7
+    // QUARTER_NOTE_DOTTED = 8
+    // QUARTER_NOTE = 9
+    // QUARTER_NOTE_TRIPLET = 10
+    // EIGHTH_NOTE_DOTTED = 11
+    // EIGHTH_NOTE = 12
+    // EIGHTH_NOTE_TRIPLET = 13
+    // SIXTEENTH_NOTE_DOTTED = 14
+    // SIXTEENTH_NOTE = 15
+    // SIXTEENTH_NOTE_TRIPLET = 16
+    // THIRTYSECOND_NOTE_DOTTED = 17
+    // THIRTYSECOND_NOTE = 18
+    // THIRTYSECOND_NOTE_TRIPLET = 19
+    optional uint32 sync_frequency = 4;
+    optional bool sync_enabled = 5;
+    optional float pulse_width = 3;
+    optional bool retrigger_enabled = 6;
+    optional float retrigger_phase = 7;
+    optional bool use_dilated_time = 8;
+  }
+
+  message TriggerEnvelope {
+    optional Envelope envelope = 1;
+  }
+
+  message EnvelopeFollower {
+    optional float attack_seconds = 1;
+    optional float release_seconds = 2;
+  }
+
+  oneof modulation_model {
+    MidiController midi_controller = 4;
+    MidiPitchBend midi_pitch_bend = 8;
+    MidiChannelPressure midi_channel_pressure = 9;
+    MidiAftertouch midi_aftertouch = 10;
+    MidiVelocity midi_velocity = 11;
+    MidiNoteFollower midi_note_follower = 12;
+    HostParameter host_parameter = 13;
+    LFO lfo = 5;
+    TriggerEnvelope trigger_envelope = 6;
+    EnvelopeFollower envelope_follower = 14;
+  }
+
+  reserved 2, 3;
+}
+
+// Next id: 5
+message Camera {
+  // FOCUS_3D = 0
+  // FREE_LOOK_3D = 1
+  // ORTHOGONAL_X = 2
+  // ORTHOGONAL_Y = 3
+  // ORTHOGONAL_Z = 4
+  optional uint32 mode = 1;
+  optional Vec2 look_at_angle = 2;
+  optional Vec3 look_at_origin = 3;
+  optional float look_at_radius = 4;
+}
+
+// Next id: 27
+message Model {
+  optional string anukari_version = 24;
+
+  repeated Link links = 1;
+  repeated Body bodies = 2;
+  repeated Sensor sensors = 3;
+  repeated Exciter exciters = 4;
+  repeated Modulator modulators = 10;
+
+  optional Camera camera = 9;
+
+  // SINGLETON = 0
+  // VOICE_INSTANCED = 1
+  // VOICE_INSTANCED_MPE = 2
+  optional uint32 midi_control_mode = 16;
+  optional uint32 num_voice_instances = 17;
+  optional MidiNoteRange master_midi_note_range = 25;
+
+  // LOWER = 0
+  // UPPER = 1
+  optional uint32 mpe_zone = 18;
+  optional uint32 mpe_num_channels = 19;
+  optional bool master_pitch_bend_enabled = 20;
+  optional uint32 master_pitch_bend_channel = 23;
+  optional uint32 master_pitch_bend_semitones = 21;
+  optional uint32 mpe_pitch_bend_semitones = 22;
+
+  optional float master_fallback_beats_per_second = 13;
+  optional float master_gain_decibels = 7;
+  optional float master_pan = 8;
+  optional float master_effect_dry_wet = 26;
+  optional float master_limiter_threshold_decibels = 11;
+  optional float master_limiter_release_seconds = 12;
+
+  message MidiRoute {
+    optional MidiEventId midi_event_id = 5;
+    repeated EntityId entity_ids = 4;
+
+    reserved 1, 2, 3;
+  }
+
+  repeated MidiRoute midi_routes = 6;
+
+  message HostParameterRoute {
+    optional uint32 id = 1;
+    optional string name = 2;
+    repeated EntityId entity_ids = 3;
+  }
+
+  repeated HostParameterRoute host_parameter_routes = 14;
+
+  reserved 5, 15;
+}

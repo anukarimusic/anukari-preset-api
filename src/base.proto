@@ -1,0 +1,16 @@
+syntax = "proto2";
+
+package anukari.proto;
+
+// Next id: 3
+message Vec2 {
+  optional float x = 1;
+  optional float y = 2;
+}
+
+// Next id: 4
+message Vec3 {
+  optional float x = 1;
+  optional float y = 2;
+  optional float z = 3;
+}
