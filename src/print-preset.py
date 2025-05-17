@@ -17,6 +17,11 @@ def main():
   # there is also a from_json() method. But note that the Model proto also
   # has its own API so you can manipulate it directly in Python, and this will
   # ensure that the data is always in a valid state.
+  #
+  # To get the binary output to write to a *.ank file, you can use bytes(model).
+  # This example uses python-betterproto so be sure to check out their docs:
+  # https://github.com/danielgtaylor/python-betterproto
+
   print(model.to_json(indent=2))
 
 
