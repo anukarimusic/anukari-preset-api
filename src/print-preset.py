@@ -1,5 +1,6 @@
 import sys
 from lib.anukari.proto import Model
+import json
 
 
 def main():
@@ -22,7 +23,7 @@ def main():
   # This example uses python-betterproto so be sure to check out their docs:
   # https://github.com/danielgtaylor/python-betterproto
 
-  print(model.to_json(indent=2))
+  print(json.dumps(model.to_dict(include_default_values=True), indent=2))
 
 
 if __name__ == "__main__":
