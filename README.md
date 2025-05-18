@@ -27,8 +27,8 @@ $ .venv\Scripts\activate
 
 $ pip install "betterproto[compiler]" grpcio-tools
 $ mkdir lib
-$ python -m grpc_tools.protoc -I src --python_betterproto_out=lib src/model.proto
-$ python -m src.print-preset .\src\example.ank
+$ python3 -m grpc_tools.protoc -I src --python_betterproto_out=lib src/model.proto
+$ python3 -m src.print-preset .\src\example.ank
 ```
 
 # Debugging preset files
